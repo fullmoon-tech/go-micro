@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "go-micro.dev/v4/errors";
+
 package errors;
 
 message Error {
@@ -7,7 +9,13 @@ message Error {
   int32 code = 2;
   string detail = 3;
   string status = 4;
+  map<string, ValidateErrors> validate_errors = 5;
 };
+
+message ValidateErrors {
+  string field_name = 1;
+  repeated string message = 2;
+}
 
 message MultiError {
   repeated Error errors = 1;
