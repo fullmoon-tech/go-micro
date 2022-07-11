@@ -79,6 +79,7 @@ See [cmd/protoc-gen-micro](https://github.com/micro/go-micro/tree/master/cmd/pro
 
 See [github.com/go-micro](https://github.com/go-micro) for community led projects.
 
+- [Demo](https://github.com/go-micro/demo)
 - [Plugins](https://github.com/go-micro/plugins)
 - [Examples](https://github.com/go-micro/examples)
 - [Dashboard](https://github.com/go-micro/dashboard)
@@ -87,10 +88,6 @@ See [github.com/go-micro](https://github.com/go-micro) for community led project
 ## Changelog
 
 See [CHANGELOG.md](https://github.com/micro/go-micro/tree/master/CHANGELOG.md) for release history.
-
-## Evolution
-
-Go Micro started in 2015. It's since evolved into a platform called [Micro](https://micro.dev) and a service called [M3O](https://m3o.com).
 
 ## License
 
