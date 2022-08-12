@@ -4,20 +4,14 @@ import (
 	"os"
 	"os/signal"
 	rtime "runtime"
-	"strings"
 	"sync"
 
 	"go-micro.dev/v4/client"
-	"go-micro.dev/v4/cmd"
-	"go-micro.dev/v4/debug/handler"
-	"go-micro.dev/v4/debug/stats"
-	"go-micro.dev/v4/debug/trace"
 	"go-micro.dev/v4/logger"
-	plugin "go-micro.dev/v4/plugins"
 	"go-micro.dev/v4/server"
 	"go-micro.dev/v4/store"
+	"go-micro.dev/v4/util/cmd"
 	signalutil "go-micro.dev/v4/util/signal"
-	"go-micro.dev/v4/util/wrapper"
 )
 
 type service struct {
@@ -27,29 +21,9 @@ type service struct {
 }
 
 func newService(opts ...Option) Service {
-	service := new(service)
-	options := newOptions(opts...)
-
-	// service name
-	serviceName := options.Server.Options().Name
-
-	// wrap client to inject From-Service header on any calls
-	options.Client = wrapper.FromService(serviceName, options.Client)
-	options.Client = wrapper.TraceCall(serviceName, trace.DefaultTracer, options.Client)
-
-	// wrap the server to provide handler stats
-	err := options.Server.Init(
-		server.WrapHandler(wrapper.HandlerStats(stats.DefaultStats)),
-		server.WrapHandler(wrapper.TraceHandler(trace.DefaultTracer)),
-	)
-	if err != nil {
-		logger.Fatal(err)
+	return &service{
+		opts: newOptions(opts...),
 	}
-
-	// set opts
-	service.opts = options
-
-	return service
 }
 
 func (s *service) Name() string {
@@ -66,24 +40,6 @@ func (s *service) Init(opts ...Option) {
 	}
 
 	s.once.Do(func() {
-		// setup the plugins
-		for _, p := range strings.Split(os.Getenv("MICRO_PLUGIN"), ",") {
-			if len(p) == 0 {
-				continue
-			}
-
-			// load the plugin
-			c, err := plugin.Load(p)
-			if err != nil {
-				logger.Fatal(err)
-			}
-
-			// initialise the plugin
-			if err := plugin.Init(c); err != nil {
-				logger.Fatal(err)
-			}
-		}
-
 		// set cmd name
 		if len(s.opts.Cmd.App().Name) == 0 {
 			s.opts.Cmd.App().Name = s.Server().Options().Name
@@ -175,14 +131,6 @@ func (s *service) Run() (err error) {
 			os.Exit(0)
 		}
 	}
-
-	// register the debug handler
-	s.opts.Server.Handle(
-		s.opts.Server.NewHandler(
-			handler.NewHandler(s.opts.Client),
-			server.InternalHandler(true),
-		),
-	)
 
 	// start the profiler
 	if s.opts.Profile != nil {
